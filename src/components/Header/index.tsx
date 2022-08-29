@@ -40,6 +40,7 @@ export function Header() {
 
         </IconButton>
       )}
+
       <Logo />
       
       { isWideVersion && <Search /> }
