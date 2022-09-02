@@ -1,6 +1,9 @@
 import type { NextPage } from 'next'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { Button, Flex, Stack } from '@chakra-ui/react'
+import * as yup from 'yup'
+import { yupResolver } from '@hookform/resolvers/yup'
+
 import { Input } from '../components/Form/Input'
 
 type SignInFormData ={
@@ -8,13 +11,21 @@ type SignInFormData ={
   password?: string,
 }
 
-const SignIn: NextPage = () => {
-  const {register, handleSubmit, formState} = useForm()
+const signInFromSchema = yup.object().shape({
+  email: yup.string().required('E-mail obrigatório').email('E-mail inválido'),
+  password: yup.string().required('Senha obrigatória')
+})
 
-  const handleSignIn: SubmitHandler<SignInFormData> = async (values, event) => {
+const SignIn: NextPage = () => {
+  const {register, handleSubmit, formState: { isSubmitting, errors } } = useForm({
+    resolver: yupResolver(signInFromSchema)
+  })
+
+  const handleSignIn: SubmitHandler<SignInFormData> = async (values) => {
     await new Promise(resolve => setTimeout(resolve, 2000))
     console.log(values)
   }
+
 
 
   return (
@@ -40,6 +51,7 @@ const SignIn: NextPage = () => {
           label="E-mail"
           {...register("email")}
         />
+       
         <Input 
           type="password" 
           label="Senha"
@@ -51,7 +63,7 @@ const SignIn: NextPage = () => {
           type="submit" 
           mt="6" colorScheme="pink" 
           size="lg"
-          isLoading={formState.isSubmitting}
+          isLoading={isSubmitting}
         >
           Entrar
         </Button>
