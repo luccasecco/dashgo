@@ -1,15 +1,27 @@
-import { Box, Button, Checkbox, Flex, Heading, Icon, Table, Tbody, Th, Thead, Tr, Td, Text, useBreakpointValue } from "@chakra-ui/react";
+import { Box, Button, Checkbox, Flex, Heading, Icon, Table, Tbody, Th, Thead, Tr, Td, Text, useBreakpointValue, Spinner } from "@chakra-ui/react";
 import Link from "next/link";
-import { RiAddLine, RiPencilLine } from "react-icons/ri";
+import { useEffect } from "react";
+import { RiAddLine } from "react-icons/ri";
+import { useQuery } from 'react-query'
+
 import { Header } from "../../components/Header";
 import { Pagination } from "../../components/Pagination";
 import { Sidebar } from "../../components/Sidebar";
 
 export default function UserList() {
+  const { data, isLoading, error } = useQuery('users', async () => {
+    const response = await fetch('http://localhost:3000/api/users')
+    const data = await  response.json()
+    
+    return data
+  })
+
+
   const isWideVersion = useBreakpointValue({
     base: false,
     lg: true,
   })
+
 
   return (
     <Box>
@@ -50,7 +62,17 @@ export default function UserList() {
             </Link>
           </Flex>
 
-          <Table colorScheme="whiteAlpha">
+          { isLoading ? (
+            <Flex justify="center">
+                <Spinner />
+            </Flex>
+          ): error? (
+            <Flex justify="center">
+              <Text>Falha ao obter os dados dos usuários</Text>
+            </Flex>
+          ): (
+            <>
+             <Table colorScheme="whiteAlpha">
             <Thead>
               <Tr>
                 <Th px={["4", "4", "6"]} color="gray.300" w="8">
@@ -81,6 +103,9 @@ export default function UserList() {
 
 
         <Pagination />
+        </>
+          )}
+
         </Box>
       </Flex>
     </Box>
