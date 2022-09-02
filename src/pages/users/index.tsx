@@ -1,19 +1,50 @@
-import { Box, Button, Checkbox, Flex, Heading, Icon, Table, Tbody, Th, Thead, Tr, Td, Text, useBreakpointValue, Spinner } from "@chakra-ui/react";
 import Link from "next/link";
-import { useEffect } from "react";
 import { RiAddLine } from "react-icons/ri";
 import { useQuery } from 'react-query'
+import { 
+    Box, 
+    Button, 
+    Checkbox, 
+    Flex, 
+    Heading, 
+    Icon, 
+    Table, 
+    Tbody, 
+    Th, 
+    Thead, 
+    Tr, 
+    Td,
+    Text, 
+    useBreakpointValue, 
+    Spinner } from "@chakra-ui/react";
+
 
 import { Header } from "../../components/Header";
 import { Pagination } from "../../components/Pagination";
 import { Sidebar } from "../../components/Sidebar";
+import { api } from "../../services/api";
 
 export default function UserList() {
-  const { data, isLoading, error } = useQuery('users', async () => {
-    const response = await fetch('http://localhost:3000/api/users')
-    const data = await  response.json()
+  const { data, isLoading, isFetching ,error } = useQuery('users', async () => {
+    const { data } = await api.get('users')
+  
     
-    return data
+    const users = data.users.map(user => {
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        createdAt: new Date(user.createdAt).toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric'
+        })
+      }
+    })
+
+    return users
+  }, {
+    staleTime: 1000 * 5 // 5 seconds
   })
 
 
@@ -47,7 +78,11 @@ export default function UserList() {
             justify="space-between"
             align="center"
           >
-            <Heading size="lg" fontWeight="normal">Usuários</Heading>
+            <Heading size="lg" fontWeight="normal">
+              Usuários
+
+              {!isLoading && isFetching && <Spinner size="sm" color="gray.500" ml="4" />}
+            </Heading>
 
             <Link href="users/create" passHref>
             <Button 
@@ -85,19 +120,23 @@ export default function UserList() {
               </Tr>
             </Thead>
             <Tbody>
-              <Tr>
+              {data.map(user => {
+                return (
+                  <Tr key={user.id}>
                 <Td px={["4", "4", "6"]}>
                   <Checkbox colorScheme="pink"/>
                 </Td>
                 <Td>
                   <Box>
-                    <Text fontWeight="bold">Lucca Secco</Text>
-                    <Text fontSize="sm" color="gray.300">luccasecco@hotmail.com</Text>
+                    <Text fontWeight="bold">{user.name}</Text>
+                    <Text fontSize="sm" color="gray.300">{user.email}</Text>
                   </Box>
                 </Td>
-               {isWideVersion &&  <Td> 29 de Agosto de 2022 </Td>}
+               {isWideVersion &&  <Td> {user.createdAt} </Td>}
           
               </Tr>
+                )
+              })}
             </Tbody>
           </Table>
 
